@@ -84,4 +84,39 @@ docker run -dp 127.0.0.1:3000:3000 `
   node:24-alpine `
   sh -c "npm install && npm run dev"
 
-docker exec -it f0021e7ed23574aae04d9b47db59d45da7bc6599bcb8130599cec487233b189a mysql -p todos
+docker exec -it <mysql-container-id> mysql -p todos
+
+
+**PART 7: Use Docker Compose**
+# Complete compose.yaml
+services:
+  app:
+    image: node:24-alpine
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - 127.0.0.1:3000:3000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: todos
+
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: todos
+
+volumes:
+  todo-mysql-data:
+# Run the application
+docker compose up -d
+docker compose logs -f
+docker exec <mysql-container-id> mysql -u root -p
+
+docker compose down
